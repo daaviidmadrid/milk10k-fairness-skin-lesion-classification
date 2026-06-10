@@ -49,8 +49,10 @@ class ImageCsvDataset(Dataset):
         transform: Callable | None = None,
         class_to_idx: dict[str, int] | None = None,
         rows: pd.DataFrame | None = None,
+        path_base: str | Path | None = None,
     ) -> None:
         self.csv_path = Path(csv_path)
+        self.path_base = Path(path_base) if path_base is not None else self.csv_path.parent
         self.df = rows.copy() if rows is not None else pd.read_csv(self.csv_path)
         self.task = task
         self.transform = transform
@@ -64,10 +66,16 @@ class ImageCsvDataset(Dataset):
         """Return the task-specific class name for one row."""
         return task_label_name(row, self.task)
 
+    def _image_path(self, row: pd.Series) -> Path:
+        """Resolve absolute and CSV-relative image paths."""
+        image_path = Path(str(row["img_path"]))
+        return image_path if image_path.is_absolute() else self.path_base / image_path
+
     def __getitem__(self, index: int) -> dict[str, torch.Tensor | int | str]:
         """Load one image and return tensors plus metadata used by metrics."""
         row = self.df.iloc[index]
-        image = Image.open(row["img_path"]).convert("RGB")
+        image_path = self._image_path(row)
+        image = Image.open(image_path).convert("RGB")
         if self.transform is not None:
             image = self.transform(image)
         label_name = self._label_name(row)
@@ -78,7 +86,7 @@ class ImageCsvDataset(Dataset):
             "sex": str(row.get("sex", "unknown")),
             "age": torch.tensor(float(row.get("age_approx", -1) if pd.notna(row.get("age_approx", -1)) else -1)),
             "class_name": label_name,
-            "path": str(row["img_path"]),
+            "path": str(image_path),
         }
 
 
@@ -94,10 +102,11 @@ class RepeatedAugmentationDataset(Dataset):
         class_to_idx: dict[str, int],
         exponent: float = 0.5,
         cap: int = 6,
+        path_base: str | Path | None = None,
     ) -> None:
         self.base_transform = base_transform
         self.aug_transform = aug_transform
-        self.dataset = ImageCsvDataset("", task, transform=None, class_to_idx=class_to_idx, rows=base_df)
+        self.dataset = ImageCsvDataset("", task, transform=None, class_to_idx=class_to_idx, rows=base_df, path_base=path_base)
         label_names = base_df.apply(lambda row: task_label_name(row, task), axis=1)
         counts = label_names.value_counts()
         max_count = counts.max()
@@ -135,6 +144,8 @@ class PairedModalDataset(Dataset):
     """Clinical-dermoscopic paired dataset for multimodal SSL pretraining."""
 
     def __init__(self, clinical_csv: str | Path, dermoscopic_csv: str | Path, transform: Callable) -> None:
+        clinical_csv = Path(clinical_csv)
+        dermoscopic_csv = Path(dermoscopic_csv)
         clinical = pd.read_csv(clinical_csv)
         derm = pd.read_csv(dermoscopic_csv)
         self.df = clinical[["lesion_id", "img_path"]].merge(
@@ -142,6 +153,8 @@ class PairedModalDataset(Dataset):
             on="lesion_id",
             suffixes=("_clinical", "_dermoscopic"),
         )
+        self.clinical_base = clinical_csv.parent
+        self.dermoscopic_base = dermoscopic_csv.parent
         self.transform = transform
 
     def __len__(self) -> int:
@@ -151,8 +164,14 @@ class PairedModalDataset(Dataset):
     def __getitem__(self, index: int) -> dict[str, torch.Tensor | str]:
         """Return the paired clinical and dermoscopic views for one lesion."""
         row = self.df.iloc[index]
-        clinical = Image.open(row["img_path_clinical"]).convert("RGB")
-        dermoscopic = Image.open(row["img_path_dermoscopic"]).convert("RGB")
+        clinical_path = Path(str(row["img_path_clinical"]))
+        dermoscopic_path = Path(str(row["img_path_dermoscopic"]))
+        if not clinical_path.is_absolute():
+            clinical_path = self.clinical_base / clinical_path
+        if not dermoscopic_path.is_absolute():
+            dermoscopic_path = self.dermoscopic_base / dermoscopic_path
+        clinical = Image.open(clinical_path).convert("RGB")
+        dermoscopic = Image.open(dermoscopic_path).convert("RGB")
         return {
             "clinical": self.transform(clinical),
             "dermoscopic": self.transform(dermoscopic),

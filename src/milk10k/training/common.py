@@ -43,6 +43,7 @@ def make_supervised_datasets(config: dict, augmented: bool = False) -> tuple[dic
             class_to_idx=class_to_idx,
             exponent=config.get("repeat_exponent", 0.5),
             cap=config.get("repeat_cap", 6),
+            path_base=paths["train"].parent,
         )
     else:
         train_ds = ImageCsvDataset(paths["train"], config["task"], transform=base_transform, class_to_idx=class_to_idx)

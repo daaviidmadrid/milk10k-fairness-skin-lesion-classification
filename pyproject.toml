@@ -7,7 +7,18 @@ name = "milk10k-fairness"
 version = "0.1.0"
 description = "Fairness-aware skin lesion classification experiments on MILK10k"
 requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pandas",
+  "scikit-learn",
+  "matplotlib",
+  "seaborn",
+  "pillow",
+  "tqdm",
+  "PyYAML",
+  "torch",
+  "torchvision",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-

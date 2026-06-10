@@ -228,7 +228,7 @@ The recommended reproducible interface is the refactored code in `configs/`, `sc
 | `model_training.ipynb` | Original supervised baseline experiments. | Compares task formulations, image modalities and backbones before selecting the final reference configuration. |
 | `model_training_online_augmentation.ipynb` | Data augmentation experiment. | Implements online augmentation, class-aware repeat factor and class-based weighted sampling. |
 | `model_training_custom.ipynb` | Custom-loss experiment. | Implements the retained `class x skin-tone` sample-weighted cross-entropy strategy. |
-| `model_training_custom_online_augmentation.ipynb` | Combined DA + CL experiment. | Combines online augmentation, class-aware sampling and class x skin-tone loss weighting. |
+| `model_training_custom_loss_online_augmentation.ipynb` | Combined DA + CL experiment. | Combines online augmentation, class-aware sampling and class x skin-tone loss weighting. |
 | `multimodal_contrastive_self_supervised_learning.ipynb` | Final multimodal SSL experiment wrapper. | Uses the final YAML configurations for SSL + DA + CL with dermoscopic fine-tuning. |
 
 For new runs, prefer the command-line scripts shown below. Use the notebooks when you want to inspect the original development workflow or reproduce the intermediate tables and plots generated during the thesis.
@@ -240,17 +240,16 @@ For new runs, prefer the command-line scripts shown below. Use the notebooks whe
 Python `>=3.10` is expected. A CUDA-enabled GPU is recommended for ViT and SSL experiments.
 
 ```bash
-pip install -r requirements.txt
 pip install -e .
 ```
 
-If a specific CUDA build is required, install PyTorch from the official PyTorch selector before installing the remaining dependencies.
+Alternatively, `pip install -r requirements.txt` can be used for a simple requirements-based setup. If a specific CUDA build is required, install PyTorch from the official PyTorch selector before installing the remaining dependencies.
 
 ---
 
 ## Execution Guide
 
-Run all commands from the repository root.
+The scripts resolve their default paths from the repository location, so they can be launched from the repository root or by using an absolute path to the script. The examples below assume the standard repository layout.
 
 ### 1. Build the Processed Dataset
 
@@ -327,7 +326,7 @@ Generated outputs and checkpoints are ignored by Git to keep the repository ligh
 
 ## Reproducibility Notes
 
-The YAML files contain the final hyperparameters used by the retained experiments. Exact numerical reproduction may still vary across hardware, CUDA versions, PyTorch versions and nondeterministic GPU kernels.
+The YAML files contain the final hyperparameters used by the retained experiments. Relative paths inside YAML files are resolved from the repository root. Exact numerical reproduction may still vary across hardware, CUDA versions, PyTorch versions and nondeterministic GPU kernels.
 
 The official MILK10k challenge test labels are not used because they are not publicly available. All reported experiments use a lesion-aware split generated from the labelled training data.
 

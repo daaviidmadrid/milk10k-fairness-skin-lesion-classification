@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 import zipfile
 from pathlib import Path
+import os
 
 import numpy as np
 import pandas as pd
@@ -101,6 +102,9 @@ def export_split_csvs(master: pd.DataFrame, lesion_splits: dict[str, set[str]], 
     for image_type, image_df in master.groupby("image_type"):
         for split_name, lesion_ids in lesion_splits.items():
             split_df = image_df[image_df["lesion_id"].isin(lesion_ids)].copy()
+            split_df["img_path"] = split_df["img_path"].apply(
+                lambda path: os.path.relpath(Path(path), start=output_dir)
+            )
             split_df[[c for c in cols if c in split_df.columns]].to_csv(
                 output_dir / f"{image_type}_{split_name}.csv",
                 index=False,
@@ -138,4 +142,3 @@ def build_milk10k(raw_dir: Path, output_dir: Path, seed: int = 123, copy_images:
     master.to_csv(output_dir / "master_table.csv", index=False)
     if copy_images:
         export_image_folders(master, lesion_splits, output_dir / "datasets")
-
