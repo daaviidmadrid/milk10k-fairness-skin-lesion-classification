@@ -1,0 +1,16 @@
+seed: 123
+task: 2f
+backbone: vit_b_32
+pretrained: true
+image_size: 224
+batch_size: 16
+lr: 0.00003
+weight_decay: 0.01
+epochs: 20
+patience: 3
+alpha: 0.4
+num_workers: 0
+output_dir: outputs/baseline_2f_dermoscopic
+data:
+  split_dir: data/processed/splits_80_10_10_by_type
+  modality: dermoscopic

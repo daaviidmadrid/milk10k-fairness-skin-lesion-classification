@@ -1,0 +1,2 @@
+"""Basic EDA figures."""
+

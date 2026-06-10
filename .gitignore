@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.venv/
+*.pyc
+.ipynb_checkpoints/
+data/raw/
+data/processed/
+data/output/
+outputs/
+checkpoints/
+figures/
+runs/
+*.zip
+*.pt
+*.pth
+*.ckpt
+*.onnx
