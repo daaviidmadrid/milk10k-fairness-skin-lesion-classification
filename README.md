@@ -1,10 +1,10 @@
-# Fairness-Aware Skin Lesion Classification with MILK10k
+# Towards Fair and Inclusive Skin Lesion Classification Systems with MILK10k
 
 This repository contains the code developed for a bachelor thesis **Towards Fair and Inclusive Skin Lesion Classification Systems** using the **MILK10k** dataset. The project evaluates how model architecture, image modality and training strategy affect three connected objectives in dermatological AI:
 
 1. **Predictive performance**, measured mainly through AUC.
 2. **Minority-class recognition**, measured through class-level precision, recall and F1-score.
-3. **Subgroup consistency**, measured through Equal Opportunity gaps across skin tone, sex and age.
+3. **Subgroup consistency**, measured through Equalized Odds Gap (EO Gap) across skin tone, sex and age.
 
 The central motivation is that a model can obtain strong aggregate performance while still performing unevenly across diagnostic classes or demographic subgroups. For that reason, this repository does not only report accuracy-oriented results. It compares each configuration using both predictive and fairness-oriented metrics, with a final Fairness-Performance Score used to summarize the trade-off.
 
@@ -134,15 +134,15 @@ This stage is intended to learn a representation that captures lesion-level info
 
 ## Metrics
 
-The evaluation uses both predictive and fairness-oriented metrics.
+The evaluation uses both predictive and fairness-oriented metrics. EO Gap is computed as a multiclass one-vs-rest Equalized Odds Gap: for each class, the metric compares both TPR and FPR across sensitive groups and then averages the resulting gaps.
 
 | Metric | Meaning | Direction |
 | --- | --- | --- |
 | Accuracy | Fraction of correct predictions | Higher is better |
 | AUC | Ranking/discrimination quality | Higher is better |
-| EO-Skin | Equal Opportunity gap across skin-tone groups | Lower is better |
-| EO-Sex | Equal Opportunity gap across sex groups | Lower is better |
-| EO-Age | Equal Opportunity gap across age groups | Lower is better |
+| EO-Skin | Equalized Odds Gap across skin-tone groups | Lower is better |
+| EO-Sex | Equalized Odds Gap across sex groups | Lower is better |
+| EO-Age | Equalized Odds Gap across age groups | Lower is better |
 | 1 - Avg. EO | Complement of the average EO gap | Higher is better |
 | FP Score | Weighted combination of AUC and 1 - Avg. EO | Higher is better |
 
@@ -155,6 +155,8 @@ FP Score = alpha * AUC + (1 - alpha) * (1 - Avg. EO)
 with `alpha = 0.4`. This gives slightly more weight to subgroup consistency than to pure predictive discrimination.
 
 During supervised training, the best checkpoint is selected using validation AUC. The FP Score is used afterward to compare final configurations under a fairness-oriented criterion.
+
+`skin_tone_class = 0` is treated as unknown or missing skin-tone information. It is ignored when computing EO-Skin. In the class x skin-tone custom loss, weights are computed only for valid skin-tone categories 1 to 5; the weight for skin-tone 0 remains zero, so those samples are not used by the class x skin-tone reweighting term.
 
 ---
 
@@ -326,7 +328,7 @@ Generated outputs and checkpoints are ignored by Git to keep the repository ligh
 
 ## Reproducibility Notes
 
-The YAML files contain the final hyperparameters used by the retained experiments. Relative paths inside YAML files are resolved from the repository root. Exact numerical reproduction may still vary across hardware, CUDA versions, PyTorch versions and nondeterministic GPU kernels.
+The YAML files contain the final hyperparameters used by the retained experiments. Relative paths inside YAML files are resolved from the repository root. Exact numerical reproduction may still vary slightly across seeds, hardware, CUDA versions, PyTorch versions and nondeterministic GPU operations.
 
 The official MILK10k challenge test labels are not used because they are not publicly available. All reported experiments use a lesion-aware split generated from the labelled training data.
 

@@ -54,7 +54,7 @@ def equalized_odds_gap(
     num_classes: int,
     ignore_values: set | None = None,
 ) -> float:
-    """Compute the mean one-vs-rest Equalized Odds gap across classes."""
+    """Compute mean one-vs-rest Equalized Odds Gap using both TPR and FPR."""
     if ignore_values:
         keep = np.asarray([group not in ignore_values for group in groups], dtype=bool)
         y_true = y_true[keep]
@@ -80,6 +80,7 @@ def equalized_odds_gap(
             tprs.append(tp / (tp + fn) if (tp + fn) else 0.0)
             fprs.append(fp / (fp + tn) if (fp + tn) else 0.0)
 
+        # Equalized Odds depends on both true-positive and false-positive rates.
         tpr_mean = float(np.mean(tprs))
         fpr_mean = float(np.mean(fprs))
         class_gaps.append(
@@ -93,6 +94,6 @@ def equalized_odds_gap(
 
 
 def fairness_performance_score(auc: float, eo_gaps: dict[str, float], alpha: float = 0.4) -> float:
-    """Combine AUC and average Equalized Odds into the thesis selection score."""
+    """Combine AUC and average EO Gap into the thesis selection score."""
     avg_eo = float(np.mean(list(eo_gaps.values()))) if eo_gaps else 0.0
     return float(alpha * auc + (1.0 - alpha) * (1.0 - avg_eo))

@@ -57,7 +57,7 @@ def evaluate(
     num_classes: int,
     alpha: float = 0.4,
 ) -> dict:
-    """Evaluate a model with predictive and fairness metrics."""
+    """Evaluate a model with predictive metrics and Equalized Odds Gaps."""
     model.eval()
     losses: list[float] = []
     y_true: list[int] = []
@@ -83,6 +83,7 @@ def evaluate(
     y_prob_arr = np.asarray(y_prob)
     y_pred_arr = y_prob_arr.argmax(axis=1)
     metrics = classification_metrics(y_true_arr, y_prob_arr, num_classes)
+    # skin_tone_class=0 denotes unknown/missing skin tone and is excluded from EO-Skin.
     eo = {
         "skin": equalized_odds_gap(y_true_arr, y_pred_arr, np.asarray(skin), num_classes, ignore_values={0}),
         "sex": equalized_odds_gap(y_true_arr, y_pred_arr, np.asarray(sex), num_classes),

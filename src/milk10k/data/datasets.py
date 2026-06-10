@@ -82,6 +82,7 @@ class ImageCsvDataset(Dataset):
         return {
             "image": image,
             "label": torch.tensor(self.class_to_idx[label_name], dtype=torch.long),
+            # 0 is kept as unknown/missing; EO-Skin and custom-loss weights handle it explicitly.
             "skin_tone": torch.tensor(int(row.get("skin_tone_class", 0)), dtype=torch.long),
             "sex": str(row.get("sex", "unknown")),
             "age": torch.tensor(float(row.get("age_approx", -1) if pd.notna(row.get("age_approx", -1)) else -1)),

@@ -48,6 +48,7 @@ def load_master_table(raw_dir: Path, image_root: Path) -> pd.DataFrame:
     gt["class_name"] = gt["class_idx"].map({i: name for i, name in enumerate(label_cols)})
 
     master = metadata.merge(gt[["lesion_id", "class_idx", "class_name"]], on="lesion_id", how="left")
+    # MILK10k uses skin_tone_class=0 for unknown/missing skin-tone information.
     master["skin_tone_class"] = master["skin_tone_class"].fillna(0).astype(int)
     master["sex"] = master["sex"].fillna("unknown").astype(str).str.lower()
     master["img_path"] = [

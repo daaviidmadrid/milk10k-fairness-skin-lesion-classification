@@ -17,7 +17,7 @@ class StandardCrossEntropy(nn.Module):
 
 
 class SampleWeightedCrossEntropy(nn.Module):
-    """Cross-entropy weighted by class and skin-tone pair."""
+    """Cross-entropy weighted by valid class and skin-tone pair."""
 
     def __init__(self, pair_weights: torch.Tensor) -> None:
         super().__init__()
@@ -38,7 +38,7 @@ def build_pair_weights(
     beta: float,
     max_skin_tone: int = 5,
 ) -> torch.Tensor:
-    """Return normalized class-skin-tone weights for SampleWeightedCrossEntropy."""
+    """Return normalized class-skin-tone weights for valid skin tones 1..max_skin_tone."""
     from milk10k.data.labels import make_binary_label
 
     weights = torch.zeros((len(class_to_idx), max_skin_tone + 1), dtype=torch.float32)
@@ -49,6 +49,7 @@ def build_pair_weights(
 
     positive_values: list[float] = []
     for (label_idx, skin_tone), group in temp.groupby(["label_idx", "skin_tone_class"]):
+        # skin_tone_class=0 is unknown/missing; its pair weight remains zero.
         if pd.isna(label_idx) or skin_tone <= 0 or skin_tone > max_skin_tone:
             continue
         n = len(group)
