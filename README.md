@@ -105,7 +105,7 @@ This strategy mainly targets **class imbalance**. It can improve recognition of 
 
 ### 3. Sample-Weighted Cross-Entropy
 
-The objective-level strategy uses `SampleWeightedCrossEntropy`, where each sample receives a weight based on its **class × skin-tone** pair. The goal is to make the loss more sensitive to combinations that are underrepresented in the training set.
+The objective-level strategy uses `SampleWeightedCrossEntropy`, where each sample receives a weight based on its **class x skin-tone** pair. The goal is to make the loss more sensitive to combinations that are underrepresented in the training set.
 
 The pair weights are computed using effective-number reweighting and then normalized. The selected beta values are:
 
@@ -174,7 +174,7 @@ The results show that fairness-aware skin lesion classification cannot be reduce
 | --- | --- |
 | Baseline selection | ViT-based models achieved strong AUC, but the most accurate configuration was not always the most balanced across subgroups. |
 | Data augmentation | Improved several minority-class F1 scores, especially in the 11-class setting, but did not improve the global FP Score by itself. |
-| Custom loss | Targeted class × skin-tone imbalance more directly, but the effect was partial and did not reduce all subgroup gaps uniformly. |
+| Custom loss | Targeted class x skin-tone imbalance more directly, but the effect was partial and did not reduce all subgroup gaps uniformly. |
 | DA + CL | Reduced EO-Skin slightly in both task settings, but introduced trade-offs in AUC and the final FP Score. |
 | SSL + DA + CL | Produced the strongest 11-class result and the best EO-Skin values among the selected final configurations. |
 
@@ -191,7 +191,7 @@ Selected aggregate results:
 
 ### Result Interpretation
 
-The most important conclusion is that supervised imbalance techniques did not behave as simple fairness fixes. Data augmentation and class-aware sampling helped the model see minority diagnostic classes more often, but this did not automatically translate into lower subgroup gaps. Similarly, the custom loss addressed class × skin-tone imbalance more explicitly, but sparse subgroup combinations made the effect uneven.
+The most important conclusion is that supervised imbalance techniques did not behave as simple fairness fixes. Data augmentation and class-aware sampling helped the model see minority diagnostic classes more often, but this did not automatically translate into lower subgroup gaps. Similarly, the custom loss addressed class x skin-tone imbalance more explicitly, but sparse subgroup combinations made the effect uneven.
 
 The best global behavior came from the SSL-based configuration. In the 11-class setting, `SSL + DA + CL` improved AUC, reduced EO-Skin and achieved the highest FP Score among the selected final experiments. In the binary setting, the gains were smaller but still consistent: the SSL-based configuration obtained the best AUC, the lowest EO-Skin and the highest FP Score among the compared final methods.
 
@@ -211,7 +211,27 @@ src/milk10k/evaluation/  Predictive and fairness metrics
 src/milk10k/models/      Supervised backbones and multimodal SSL model
 src/milk10k/training/    Training loop, losses and experiment strategies
 src/milk10k/utils/       Configuration and reproducibility helpers
+notebooks/               Original execution notebooks used during thesis development
 ```
+
+---
+
+## Notebook Guide
+
+The `notebooks/` directory contains the original working notebooks used to execute and inspect the experiments during thesis development. They are kept for traceability, but they should be interpreted as **execution notebooks**, not as the cleanest entrypoint to the project. They are intentionally more verbose, exploratory and "dirty" than the rest of the repository.
+
+The recommended reproducible interface is the refactored code in `configs/`, `scripts/` and `src/`. Those files are the concise and cleaned version of the notebook workflow: the same experimental ideas are separated into reusable modules, shorter scripts and explicit YAML configurations.
+
+| Notebook | Purpose | Notes |
+| --- | --- | --- |
+| `MILK10k_EDA.ipynb` | Dataset exploration, split inspection and figure generation. | Useful to reproduce the visual analysis and dataset figures used in the thesis. |
+| `model_training.ipynb` | Original supervised baseline experiments. | Compares task formulations, image modalities and backbones before selecting the final reference configuration. |
+| `model_training_online_augmentation.ipynb` | Data augmentation experiment. | Implements online augmentation, class-aware repeat factor and class-based weighted sampling. |
+| `model_training_custom.ipynb` | Custom-loss experiment. | Implements the retained `class x skin-tone` sample-weighted cross-entropy strategy. |
+| `model_training_custom_online_augmentation.ipynb` | Combined DA + CL experiment. | Combines online augmentation, class-aware sampling and class x skin-tone loss weighting. |
+| `multimodal_contrastive_self_supervised_learning.ipynb` | Final multimodal SSL experiment wrapper. | Uses the final YAML configurations for SSL + DA + CL with dermoscopic fine-tuning. |
+
+For new runs, prefer the command-line scripts shown below. Use the notebooks when you want to inspect the original development workflow or reproduce the intermediate tables and plots generated during the thesis.
 
 ---
 
@@ -278,8 +298,8 @@ python scripts/run_ssl.py --config configs/ssl_2f.yaml
 | `baseline_2f.yaml` | 2f | Supervised baseline | ViT-B/32, dermoscopic, BS 16, LR 3e-5 |
 | `data_augmentation.yaml` | 11f | Online DA + class sampler | BS 128, repeat cap 6 |
 | `data_augmentation_2f.yaml` | 2f | Online DA + class sampler | BS 64, repeat cap 6 |
-| `custom_loss.yaml` | 11f | Class × skin-tone weighted CE | beta 0.999 |
-| `custom_loss_2f.yaml` | 2f | Class × skin-tone weighted CE | beta 0.99 |
+| `custom_loss.yaml` | 11f | Class x skin-tone weighted CE | beta 0.999 |
+| `custom_loss_2f.yaml` | 2f | Class x skin-tone weighted CE | beta 0.99 |
 | `aug_plus_loss.yaml` | 11f | DA + custom loss | BS 128, beta 0.999 |
 | `aug_plus_loss_2f.yaml` | 2f | DA + custom loss | BS 64, beta 0.99 |
 | `ssl.yaml` | 11f | SSL + DA + CL | NT-Xent temperature 0.10 |
