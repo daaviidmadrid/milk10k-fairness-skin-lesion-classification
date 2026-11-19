@@ -1,0 +1,3 @@
+filename,lesion_id,image_type,diagnostic_class,attribution,license,sha256
+ISIC_7780391.jpg,IL_9026324,clinical: close-up,BKL,MILK study team,CC-BY-NC-4.0,0f9a11fb422ca8718c62ec534516298e90512c78e6a3832c50e9cf08fe15ca04
+ISIC_8180214.jpg,IL_9026324,dermoscopic,BKL,MILK study team,CC-BY-NC-4.0,c9ffa3f704e6f552890d03351a3ca65b81afc35760cd8bd47dd21a1ecfc94123

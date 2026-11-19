@@ -1,0 +1,7 @@
+task,method,auc,eo_skin,fp_score
+11-class,Supervised baseline,0.876,0.0730,0.9179
+11-class,Augmentation + weighted loss,0.871,0.0713,0.9116
+11-class,Contrastive pretraining + augmentation + weighted loss,0.895,0.0677,0.9233
+Binary,Supervised baseline,0.839,0.1024,0.8772
+Binary,Augmentation + weighted loss,0.830,0.1004,0.8719
+Binary,Contrastive pretraining + augmentation + weighted loss,0.843,0.0936,0.8785
